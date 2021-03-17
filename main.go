@@ -1,6 +1,7 @@
 package main
 
 import (
+	"log"
 	"net/http"
 
 	"github.com/soosungp33/Go_TodoList/app"
@@ -16,5 +17,9 @@ func main() {
 
 	n.UseHandler(m) // 래핑
 
-	http.ListenAndServe(":3000", n)
+	log.Println("Started App")
+	err := http.ListenAndServe(":3000", n)
+	if err != nil {
+		panic(err)
+	}
 }
