@@ -9,6 +9,7 @@ import (
 	"strconv"
 	"testing"
 
+	"github.com/soosungp33/Go_TodoList/model"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -17,7 +18,7 @@ func TestTodo(t *testing.T) {
 	ts := httptest.NewServer(MakeHandler()) // 테스트 서버 설정
 	defer ts.Close()
 
-	var todo Todo
+	var todo model.Todo
 
 	// add(POST)로 리스트 2개를 추가하는 코드
 	// ts.URL = local:3000
@@ -42,7 +43,7 @@ func TestTodo(t *testing.T) {
 	resp, err = http.Get(ts.URL + "/todos") // todos경로에 GET으로 요청하는 것은 getTodoListHandler 이다.
 	assert.NoError(err)
 	assert.Equal(http.StatusOK, resp.StatusCode)
-	todos := []*Todo{}
+	todos := []*model.Todo{}
 	err = json.NewDecoder(resp.Body).Decode(&todos)
 	assert.NoError(err)
 	assert.Equal(len(todos), 2) // 위에서 2개 add했으므로 todos의 크기는 2여야 한다.
@@ -63,7 +64,7 @@ func TestTodo(t *testing.T) {
 	resp, err = http.Get(ts.URL + "/todos") // GET으로 리스트를 가져와서
 	assert.NoError(err)
 	assert.Equal(http.StatusOK, resp.StatusCode)
-	todos = []*Todo{}
+	todos = []*model.Todo{}
 	err = json.NewDecoder(resp.Body).Decode(&todos) // todos에 담고
 	assert.NoError(err)
 	assert.Equal(len(todos), 2)
@@ -81,7 +82,7 @@ func TestTodo(t *testing.T) {
 	resp, err = http.Get(ts.URL + "/todos") // GET으로 리스트를 가져와서
 	assert.NoError(err)
 	assert.Equal(http.StatusOK, resp.StatusCode)
-	todos = []*Todo{}
+	todos = []*model.Todo{}
 	err = json.NewDecoder(resp.Body).Decode(&todos) // todos에 담고
 	assert.NoError(err)
 	assert.Equal(len(todos), 1) // 지웠으니까 사이즈가 1이어야 한다.
