@@ -39,7 +39,7 @@ func addTodoHandler(w http.ResponseWriter, r *http.Request) { // 프론트에서
 	todo := &Todo{id, name, false, time.Now()}
 	todoMap[id] = todo
 	// 렌더링을 사용해서 JSON으로 반환
-	rd.JSON(w, http.StatusOK, todo)
+	rd.JSON(w, http.StatusCreated, todo)
 }
 
 func removeTodoHandler(w http.ResponseWriter, r *http.Request) {
@@ -69,15 +69,8 @@ type Success struct {
 	Success bool `json:"success"`
 }
 
-func addTestTodos() { // 테스트용 데이터
-	todoMap[1] = &Todo{1, "Test1", false, time.Now()}
-	todoMap[2] = &Todo{2, "Test2", true, time.Now()}
-	todoMap[3] = &Todo{3, "Test3", false, time.Now()}
-}
-
 func MakeHandler() http.Handler {
 	todoMap = make(map[int]*Todo)
-	addTestTodos()
 
 	rd = render.New() // 렌더링을 사용해서 JSON 변환을 쉽게하기
 	r := mux.NewRouter()
