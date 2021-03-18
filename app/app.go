@@ -2,6 +2,7 @@ package app
 
 import (
 	"net/http"
+	"strconv"
 	"time"
 
 	"github.com/gorilla/mux"
@@ -41,6 +42,21 @@ func addTodoHandler(w http.ResponseWriter, r *http.Request) { // 프론트에서
 	rd.JSON(w, http.StatusOK, todo)
 }
 
+func removeTodoHandler(w http.ResponseWriter, r *http.Request) {
+	vars := mux.Vars(r)               // mux.Vars를 통해 변수 맵을 만들어 검색
+	id, _ := strconv.Atoi(vars["id"]) // id에 있는 문자열을 숫자로 변경
+	if _, ok := todoMap[id]; ok {     // todoMap에 id가 있으면
+		delete(todoMap, id) // 삭제하고
+		rd.JSON(w, http.StatusOK, Success{true})
+	} else {
+		rd.JSON(w, http.StatusOK, Success{false})
+	}
+}
+
+type Success struct {
+	Success bool `json:"success"`
+}
+
 func addTestTodos() { // 테스트용 데이터
 	todoMap[1] = &Todo{1, "Test1", false, time.Now()}
 	todoMap[2] = &Todo{2, "Test2", true, time.Now()}
@@ -56,7 +72,9 @@ func MakeHandler() http.Handler {
 
 	r.HandleFunc("/todos", getTodoListHandler).Methods("GET")
 	r.HandleFunc("/todos", addTodoHandler).Methods("POST")
-	r.HandleFunc("/", indexHandler) // 처음 서버를 시작하고 local:3000으로 들어갔을 때 바로 local:3000/todo.html로 리다이렉트 하는 핸들러
+	r.HandleFunc("/todos/{id:[0-9]+}", removeTodoHandler).Methods("DELETE") // 아이디는 1개 이상인 숫자로만 이루어짐
+	// 처음 서버를 시작하고 local:3000으로 들어갔을 때 바로 local:3000/todo.html로 리다이렉트 하는 핸들러
+	r.HandleFunc("/", indexHandler)
 
 	return r
 }

@@ -41,7 +41,20 @@
         });
     
         todoListItem.on('click', '.remove', function() {
-            $(this).parent().remove();
+            // 서버로 요청을 날린다음에 요청이 처리된 다음 지워야한다.
+            // url: todos/id, method: DELETE
+            var id = $(this).closest("li").attr('id') // 가장 가까운 li 태그의 id를 가져온다.
+            var $self = $(this);
+            $.ajax({
+                url: "todos/" + id,
+                type: "DELETE",
+                success: function(data) {
+                    if (data.success) {
+                        $self.parent().remove(); // 응답이 성공적으로 오면 지워준다.
+                    }
+                }
+            })
+            // $(this).parent().remove(); -> 바로 지워짐
         });
     
     });
