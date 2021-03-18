@@ -16,12 +16,6 @@ func indexHandler(w http.ResponseWriter, r *http.Request) {
 var rd *render.Render
 
 func getTodoListHandler(w http.ResponseWriter, r *http.Request) {
-	/*
-		list := []*Todo{}
-		for _, v := range todoMap {
-			list = append(list, v)
-		}
-	*/
 	list := model.GetTodos()
 	// 렌더링을 사용해서 JSON으로 반환
 	rd.JSON(w, http.StatusOK, list)
@@ -29,11 +23,6 @@ func getTodoListHandler(w http.ResponseWriter, r *http.Request) {
 
 func addTodoHandler(w http.ResponseWriter, r *http.Request) { // 프론트에서 올 때 name에다 Item을 넣어서 온다.
 	name := r.FormValue("name") // 키를 통해서 value에 있는 Item을 꺼낸다.
-	/*
-		id := len(todoMap) + 1      // 임의의 ID
-		todo := &Todo{id, name, false, time.Now()}
-		todoMap[id] = todo
-	*/
 	todo := model.AddTodo(name)
 	// 렌더링을 사용해서 JSON으로 반환
 	rd.JSON(w, http.StatusCreated, todo)
@@ -42,14 +31,6 @@ func addTodoHandler(w http.ResponseWriter, r *http.Request) { // 프론트에서
 func removeTodoHandler(w http.ResponseWriter, r *http.Request) {
 	vars := mux.Vars(r)               // mux.Vars를 통해 변수 맵을 만들어 검색
 	id, _ := strconv.Atoi(vars["id"]) // id에 있는 문자열을 숫자로 변경
-	/*
-		if _, ok := todoMap[id]; ok {     // todoMap에 id가 있으면
-			delete(todoMap, id) // 삭제하고
-			rd.JSON(w, http.StatusOK, Success{true})
-		} else {
-			rd.JSON(w, http.StatusOK, Success{false})
-		}
-	*/
 	ok := model.RemoveTodo(id)
 	if ok {
 		rd.JSON(w, http.StatusOK, Success{true})
@@ -68,14 +49,6 @@ func completeTodoHandler(w http.ResponseWriter, r *http.Request) {
 	} else {
 		rd.JSON(w, http.StatusOK, Success{false})
 	}
-	/*
-		if todo, ok := todoMap[id]; ok {
-			todo.Completed = complete // true면 체크, false면 해제
-			rd.JSON(w, http.StatusOK, Success{true})
-		} else {
-			rd.JSON(w, http.StatusOK, Success{false})
-		}
-	*/
 }
 
 type Success struct {
@@ -83,7 +56,6 @@ type Success struct {
 }
 
 func MakeHandler() http.Handler {
-	//todoMap = make(map[int]*Todo)
 
 	rd = render.New() // 렌더링을 사용해서 JSON 변환을 쉽게하기
 	r := mux.NewRouter()
