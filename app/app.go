@@ -32,6 +32,15 @@ func getTodoListHandler(w http.ResponseWriter, r *http.Request) {
 	rd.JSON(w, http.StatusOK, list)
 }
 
+func adddTodoHandler(w http.ResponseWriter, r *http.Request) { // 프론트에서 올 때 name에다 Item을 넣어서 온다.
+	name := r.FormValue("name") // 키를 통해서 value에 있는 Item을 꺼낸다.
+	id := len(todoMap) + 1      // 임의의 ID
+	todo := &Todo{id, name, false, time.Now()}
+	todoMap[id] = todo
+	// 렌더링을 사용해서 JSON으로 반환
+	rd.JSON(w, http.StatusOK, todo)
+}
+
 func addTestTodos() { // 테스트용 데이터
 	todoMap[1] = &Todo{1, "Test1", false, time.Now()}
 	todoMap[2] = &Todo{2, "Test2", true, time.Now()}
@@ -46,6 +55,7 @@ func MakeHandler() http.Handler {
 	r := mux.NewRouter()
 
 	r.HandleFunc("/todos", getTodoListHandler).Methods("GET")
+	r.HandleFunc("/todos", adddTodoHandler).Methods("POST")
 	r.HandleFunc("/", indexHandler) // 처음 서버를 시작하고 local:3000으로 들어갔을 때 바로 local:3000/todo.html로 리다이렉트 하는 핸들러
 
 	return r
