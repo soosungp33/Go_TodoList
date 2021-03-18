@@ -31,13 +31,31 @@
         });
     
         todoListItem.on('change', '.checkbox', function() {
-            if ($(this).attr('checked')) {
-                $(this).removeAttr('checked');
-            } else {
-                $(this).attr('checked', 'checked');
+            var id = $(this).closest("li").attr('id') // 가장 가까운 li 태그의 id를 가져온다.
+            var $self = $(this);
+            var complete = true;
+            if ($(this).attr('checked')) { // 이미 체크되어있으면 false로 변경해준다.
+                complete = false;
             }
-    
-            $(this).closest("li").toggleClass('completed');
+            // 이미 체크되어있는 상태면 해제시키라는 의미에서 false를 날려주고, 해제되어 있는 상태면 체크하라는 의미에서 true를 날려준다.
+            $.get("complete-todo/"+id+"?complete="+complete, function(data) { // 체크되어있는지 아닌지에 따라 다른 응답이 온다.
+                if (complete) {
+                    $self.attr('checked', 'checked');
+                } else {
+                    $self.removeAttr('checked');
+                }
+                $self.closest("li").toggleClass('completed');
+
+                /* -> 서버에 날리지않고 그냥 체크되고 해제됨
+                if ($self.attr('checked')) {
+                    $self.removeAttr('checked');
+                } else {
+                    $self.attr('checked', 'checked');
+                }
+        
+                $(this).closest("li").toggleClass('completed');
+                */
+            })
         });
     
         todoListItem.on('click', '.remove', function() {
