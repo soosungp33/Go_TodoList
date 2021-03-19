@@ -10,32 +10,15 @@ type Todo struct {
 	CreatedAt time.Time `json:"created_at"`
 }
 
-type dbHandler interface {
-	getTodos() []*Todo
-	addTodo(name string) *Todo
-	removeTodo(id int) bool
-	completeTodo(id int, complete bool) bool
+type DBHandler interface {
+	GetTodos() []*Todo
+	AddTodo(name string) *Todo
+	RemoveTodo(id int) bool
+	CompleteTodo(id int, complete bool) bool
+	Close()
 }
 
-var handler dbHandler
-
-func init() { // 이 패키지가 initialize될 때 한 번만 호출됨(초기화)
-	//handler = newMemoryHandler() // memoryHandler.go에 있음
-	handler = newSqliteHandler()
-}
-
-func GetTodos() []*Todo {
-	return handler.getTodos()
-}
-
-func AddTodo(name string) *Todo {
-	return handler.addTodo(name)
-}
-
-func RemoveTodo(id int) bool {
-	return handler.removeTodo(id)
-}
-
-func CompleteTodo(id int, complete bool) bool {
-	return handler.completeTodo(id, complete)
+func NewDBHandler() DBHandler {
+	//handler = newMemoryHandler()
+	return newSqliteHandler()
 }

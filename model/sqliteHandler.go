@@ -10,7 +10,7 @@ type sqliteHandler struct {
 	db *sql.DB // sql 인스턴스를 가지고 있어야 한다.
 }
 
-func newSqliteHandler() dbHandler {
+func newSqliteHandler() DBHandler {
 	db, err := sql.Open("sqlite3", "./test.db") // test.db라는 파일db를 연다.
 	if err != nil {
 		panic(err)
@@ -27,19 +27,19 @@ func newSqliteHandler() dbHandler {
 	return &sqliteHandler{db} // 이 db를 계속 사용해야하니까 인스턴스로 저장하고 리턴해준다.
 }
 
-func (s *sqliteHandler) close() { // db가 사라지기 전에 닫아줘야해서 만드는 함수
+func (s *sqliteHandler) Close() { // db가 사라지기 전에 닫아줘야해서 만드는 함수
 	s.db.Close()
 }
 
-func (s *sqliteHandler) getTodos() []*Todo {
+func (s *sqliteHandler) GetTodos() []*Todo {
 	return nil
 }
-func (s *sqliteHandler) addTodo(name string) *Todo {
+func (s *sqliteHandler) AddTodo(name string) *Todo {
 	return nil
 }
-func (s *sqliteHandler) removeTodo(id int) bool {
+func (s *sqliteHandler) RemoveTodo(id int) bool {
 	return false
 }
-func (s *sqliteHandler) completeTodo(id int, complete bool) bool {
+func (s *sqliteHandler) CompleteTodo(id int, complete bool) bool {
 	return false
 }
