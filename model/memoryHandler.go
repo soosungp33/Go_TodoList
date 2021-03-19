@@ -2,6 +2,7 @@ package model
 
 import "time"
 
+// db안쓰고 그냥 인메모리로 사용할 때 쓰는 handler
 type memoryHandler struct {
 	todoMap map[int]*Todo
 }

@@ -10,7 +10,7 @@ import (
 
 func main() {
 	m := app.MakeHandler()
-	defer m.Close() // 앱이 종료되기 전에 db를 종료해준다.
+	defer m.Close() // 앱이 종료되기 전에 db를 종료해준다.(main에서 컨트롤해야한다.)
 	n := negroni.Classic()
 	n.UseHandler(m)
 

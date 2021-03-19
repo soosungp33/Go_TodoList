@@ -6,6 +6,7 @@ import (
 	"net/http"
 	"net/http/httptest"
 	"net/url"
+	"os"
 	"strconv"
 	"testing"
 
@@ -14,8 +15,12 @@ import (
 )
 
 func TestTodo(t *testing.T) {
+	os.Remove("./test.db") // 테스트하기 전에 테스트파일을 없애준다.
 	assert := assert.New(t)
-	ts := httptest.NewServer(MakeHandler()) // 테스트 서버 설정
+	ah := MakeHandler()
+	defer ah.Close() // db를 종료해줘야함
+
+	ts := httptest.NewServer(ah) // 테스트 서버 설정
 	defer ts.Close()
 
 	var todo model.Todo
