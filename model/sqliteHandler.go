@@ -11,8 +11,8 @@ type sqliteHandler struct {
 	db *sql.DB // sql 인스턴스를 가지고 있어야 한다.
 }
 
-func newSqliteHandler() DBHandler {
-	db, err := sql.Open("sqlite3", "./test.db") // test.db라는 파일db를 연다.
+func newSqliteHandler(filepath string) DBHandler {
+	db, err := sql.Open("sqlite3", filepath) // 파일db를 연다.
 	if err != nil {
 		panic(err)
 	}

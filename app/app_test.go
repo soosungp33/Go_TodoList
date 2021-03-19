@@ -17,7 +17,7 @@ import (
 func TestTodo(t *testing.T) {
 	os.Remove("./test.db") // 테스트하기 전에 테스트파일을 없애준다.
 	assert := assert.New(t)
-	ah := MakeHandler()
+	ah := MakeHandler("./test.db")
 	defer ah.Close() // db를 종료해줘야함
 
 	ts := httptest.NewServer(ah) // 테스트 서버 설정
