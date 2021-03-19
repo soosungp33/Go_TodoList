@@ -20,7 +20,8 @@ type dbHandler interface {
 var handler dbHandler
 
 func init() { // 이 패키지가 initialize될 때 한 번만 호출됨(초기화)
-	handler = newMemoryHandler() // memoryHandler.go에 있음
+	//handler = newMemoryHandler() // memoryHandler.go에 있음
+	handler = newSqliteHandler()
 }
 
 func GetTodos() []*Todo {
