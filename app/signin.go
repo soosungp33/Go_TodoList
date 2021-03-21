@@ -4,6 +4,7 @@ import (
 	"context"
 	"crypto/rand"
 	"encoding/base64"
+	"encoding/json"
 	"fmt"
 	"io/ioutil"
 	"log"
@@ -17,9 +18,17 @@ import (
 
 // https://pkg.go.dev/golang.org/x/oauth2#pkg-overview
 
+// 로그인 정보를 나타내는 구조체
+type GoogleUserId struct {
+	ID            string `json:"id"`
+	Email         string `json:"email"`
+	VerifiedEmail bool   `json:verified_email"`
+	Picture       string `json:"picture"`
+}
+
 var googleOauthConfig = oauth2.Config{
 	RedirectURL:  "http://localhost:3000/auth/google/callback",
-	ClientID:     os.Getenv("GOOGLE_CLIENT_ID"),
+	ClientID:     os.Getenv("GOOGLE_CLIENT_ID"), // 환경변수에 설정해놓은 ID를 가져옴
 	ClientSecret: os.Getenv("GOOGLE_SECRET_KEY"),
 	Scopes:       []string{"https://www.googleapis.com/auth/userinfo.email"},
 	Endpoint:     google.Endpoint,
@@ -51,17 +60,39 @@ func googleAuthCallback(w http.ResponseWriter, r *http.Request) {
 		http.Redirect(w, r, "/", http.StatusTemporaryRedirect) // 잘못된 접근이면 루트경로로 리다이렉트
 	}
 	data, err := getGoogleUserInfo(r.FormValue("code")) // userinfo를 구글에 request해서 받아온다.
+
 	if err != nil {
-		log.Println(err.Error)
-		http.Redirect(w, r, "/", http.StatusTemporaryRedirect)
+		errMsg := fmt.Sprintf("invalid google oauth state:%s state:%s", oauthstate.Value, googlestate)
+		log.Println(errMsg)
+		http.Error(w, errMsg, http.StatusInternalServerError)
 		return
 	}
 
-	fmt.Fprint(w, string(data)) // string으로 화면에 내 정보가 나타난다.
-	/*
-		id, email, verified_email, picture 가 나타난다.
-		id를 통해서 키를 만들면 됨
-	*/
+	// data에는 id, email, verified_email, picture 가 나타난다.
+	// ID 정보를 세션 쿠키에다 저장(다른 페이지에서 로그인 여부를 판단하는데 사용)
+	var userInfo GoogleUserId
+	err = json.Unmarshal(data, &userInfo)
+	if err != nil {
+		log.Println(err.Error())
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	// 참고 : https://github.com/gorilla/sessions
+	session, err := store.Get(r, "session")
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+	// Set some session values.
+	session.Values["id"] = userInfo.ID
+	// Save it before we write to the response/return from the handler.
+	err = session.Save(r, w) // session이라는 이름의 세션에 저장
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+	http.Redirect(w, r, "/", http.StatusTemporaryRedirect) // 최종적으로 로그인을 한 뒤 정보들을 세션에 저장하고 메인으로 리다이렉션
 }
 
 var oauthGoogleUrlAPI = "https://www.googleapis.com/oauth2/v2/userinfo?access_token="

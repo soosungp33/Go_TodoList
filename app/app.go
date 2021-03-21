@@ -2,9 +2,11 @@ package app
 
 import (
 	"net/http"
+	"os"
 	"strconv"
 
 	"github.com/gorilla/mux"
+	"github.com/gorilla/sessions"
 	"github.com/soosungp33/Go_TodoList/model"
 	"github.com/unrolled/render"
 )
@@ -13,7 +15,22 @@ func indexHandler(w http.ResponseWriter, r *http.Request) {
 	http.Redirect(w, r, "/todo.html", http.StatusTemporaryRedirect)
 }
 
-var rd *render.Render = render.New() // 렌더링을 사용해서 JSON 변환을 쉽게하기
+func getSessionId(r *http.Request) string { // indexHandler가 호출될 때 세션 ID를 읽어와야 로그인 정보들을 활용할 수 있다.(쿠키는 Request에 들어있다.)
+	session, err := store.Get(r, "session") // session이라는 세션에 저장되어 있는 정보에 접근
+	if err != nil {
+		return ""
+	}
+
+	val := session.Values["id"]
+	if val == nil { // id가 없으면(로그인을 안했으면)
+		return ""
+	}
+
+	return val.(string)
+}
+
+var store = sessions.NewCookieStore([]byte(os.Getenv("SESSION_KEY"))) // 환경 변수에 설정해놓은 SESSION_KEY를 가져옴(임의로 설정하면 됨)
+var rd *render.Render = render.New()                                  // 렌더링을 사용해서 JSON 변환을 쉽게하기
 
 type AppHandler struct {
 	http.Handler
