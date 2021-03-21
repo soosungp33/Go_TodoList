@@ -4,11 +4,13 @@ import (
 	"net/http"
 	"os"
 	"strconv"
+	"strings"
 
 	"github.com/gorilla/mux"
 	"github.com/gorilla/sessions"
 	"github.com/soosungp33/Go_TodoList/model"
 	"github.com/unrolled/render"
+	"github.com/urfave/negroni"
 )
 
 func indexHandler(w http.ResponseWriter, r *http.Request) {
@@ -81,10 +83,39 @@ func (a *AppHandler) Close() {
 	a.db.Close()
 }
 
+func CheckSignin(w http.ResponseWriter, r *http.Request, next http.HandlerFunc) {
+	// 유저가 요청한 URL이 로그인 관련이면 그냥 next해야된다(안해주면 무한루프를 돌 수도 있음)
+	if strings.Contains(r.URL.Path, "/signin") || strings.Contains(r.URL.Path, "/auth") {
+		// URL에 로그인 페이지가 포함되어 있거나 로그인 버튼을 눌러서 회원가입(구글 권한 요청 페이지) 페이지가 포함되어 있으면 next 핸들러로 간다.
+		next(w, r)
+		return
+	}
+
+	// 로그인 URL외에 다른 URL을 요청할 때 유저가 로그인 되어있으면 next로 아니면 로그인으로 리다이렉트
+	sessionID := getSessionId(r)
+	if sessionID != "" {
+		next(w, r)
+		return
+	}
+
+	http.Redirect(w, r, "/signin.html", http.StatusTemporaryRedirect)
+
+}
+
 func MakeHandler(filepath string) *AppHandler {
 	r := mux.NewRouter()
+	// 미들웨어를 추가해서 모든 핸들러가 불릴 때마다 세션아이디를 체크
+	// 원래 negroni.Classic()은 NewRecovery(), NewLogger(), NewStatic(http.Dir("public"))을 순서대로 반환한다.
+	// public으로 가기전에 CheckSignin핸들러를 불러 로그인이 되어있는지 아닌지 검사한다.
+	n := negroni.New(
+		negroni.NewRecovery(),
+		negroni.NewLogger(),
+		negroni.HandlerFunc(CheckSignin),
+		negroni.NewStatic(http.Dir("public")))
+	n.UseHandler(r)
+
 	a := &AppHandler{
-		Handler: r,
+		Handler: n,
 		db:      model.NewDBHandler(filepath),
 	}
 
