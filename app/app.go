@@ -17,7 +17,8 @@ func indexHandler(w http.ResponseWriter, r *http.Request) {
 	http.Redirect(w, r, "/todo.html", http.StatusTemporaryRedirect)
 }
 
-func getSessionId(r *http.Request) string { // indexHandler가 호출될 때 세션 ID를 읽어와야 로그인 정보들을 활용할 수 있다.(쿠키는 Request에 들어있다.)
+// 테스트 코드에서 사용하기 위해 람다 함수를 이용해 전역변수로 설정
+var getSessionId = func(r *http.Request) string { // indexHandler가 호출될 때 세션 ID를 읽어와야 로그인 정보들을 활용할 수 있다.(쿠키는 Request에 들어있다.)
 	session, err := store.Get(r, "session") // session이라는 세션에 저장되어 있는 정보에 접근
 	if err != nil {
 		return ""
@@ -49,7 +50,7 @@ func (a *AppHandler) getTodoListHandler(w http.ResponseWriter, r *http.Request) 
 func (a *AppHandler) addTodoHandler(w http.ResponseWriter, r *http.Request) { // 프론트에서 올 때 name에다 Item을 넣어서 온다.
 	sessionId := getSessionId(r) // 세션 아이디에 해당하는 리스트에 add
 	name := r.FormValue("name")  // 키를 통해서 value에 있는 Item을 꺼낸다.
-	todo := a.db.AddTodo(sessionId, name)
+	todo := a.db.AddTodo(name, sessionId)
 	// 렌더링을 사용해서 JSON으로 반환
 	rd.JSON(w, http.StatusCreated, todo)
 }

@@ -54,17 +54,17 @@ func generateStateOauthCookie(w http.ResponseWriter) string {
 
 func googleAuthCallback(w http.ResponseWriter, r *http.Request) {
 	oauthstate, _ := r.Cookie("oauthstate") // 위에서 저장했던 쿠키를 반환
-	googlestate := r.FormValue("state")     // 구글에서 보내준 state
-	if googlestate != oauthstate.Value {    // 둘이 다르면 잘못된 접근
-		log.Printf("invalid google oauth state:%s state:%s", oauthstate.Value, googlestate)
-		http.Redirect(w, r, "/", http.StatusTemporaryRedirect) // 잘못된 접근이면 루트경로로 리다이렉트
+	// r.FormValue("state") -> 구글에서 보내준 state
+	if r.FormValue("state") != oauthstate.Value { // 둘이 다르면 잘못된 접근
+		errMsg := fmt.Sprintf("invalid google oauth state:%s state:%s", oauthstate.Value, r.FormValue("state"))
+		log.Printf(errMsg)
+		http.Error(w, errMsg, http.StatusInternalServerError)
 	}
 	data, err := getGoogleUserInfo(r.FormValue("code")) // userinfo를 구글에 request해서 받아온다.
 
 	if err != nil {
-		errMsg := fmt.Sprintf("invalid google oauth state:%s state:%s", oauthstate.Value, googlestate)
-		log.Println(errMsg)
-		http.Error(w, errMsg, http.StatusInternalServerError)
+		log.Println(err.Error())
+		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
 
@@ -95,7 +95,7 @@ func googleAuthCallback(w http.ResponseWriter, r *http.Request) {
 	http.Redirect(w, r, "/", http.StatusTemporaryRedirect) // 최종적으로 로그인을 한 뒤 정보들을 세션에 저장하고 메인으로 리다이렉션
 }
 
-var oauthGoogleUrlAPI = "https://www.googleapis.com/oauth2/v2/userinfo?access_token="
+const oauthGoogleUrlAPI = "https://www.googleapis.com/oauth2/v2/userinfo?access_token="
 
 func getGoogleUserInfo(code string) ([]byte, error) {
 	token, err := googleOauthConfig.Exchange(context.Background(), code)

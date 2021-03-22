@@ -18,6 +18,11 @@ func TestTodo(t *testing.T) {
 	os.Remove("./test.db") // 테스트하기 전에 테스트파일을 없애준다.
 	assert := assert.New(t)
 	ah := MakeHandler("./test.db")
+
+	getSessionId = func(r *http.Request) string { // 테스트 코드에서는 로그인이 되었다고 가정해야하므로 로그인 값을 임의로 설정
+		return "testsessionId"
+	}
+
 	defer ah.Close() // db를 종료해줘야함
 
 	ts := httptest.NewServer(ah) // 테스트 서버 설정

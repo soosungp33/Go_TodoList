@@ -40,7 +40,7 @@ func (s *sqliteHandler) GetTodos(sessionId string) []*Todo {
 	todos := []*Todo{}
 	// todos에서 검색하면 모든 항목을 비교해서 가져와야하므로 비효율적 O(N) -> 위에 CREATE 할 때 만들어진 인덱스를 사용해야함
 	// 지금은 디비가 작아서 그냥 todos에서 가져온다.
-	rows, err := s.db.Query("SELECT id, name, completed, createdAt FROM todos WHERE sessiondId=?", sessionId)
+	rows, err := s.db.Query("SELECT id, name, completed, createdAt FROM todos WHERE sessionId=?", sessionId)
 	if err != nil {
 		panic(err)
 	}
