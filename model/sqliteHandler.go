@@ -19,10 +19,14 @@ func newSqliteHandler(filepath string) DBHandler {
 	statement, _ := db.Prepare( // 쿼리문 작성
 		`CREATE TABLE IF NOT EXISTS todos (
 			id 		  INTEGER PRIMARY KEY AUTOINCREMENT,
+			sessionId STRING,
 			name 	  TEXT,
 			completed BOOLEAN,
 			createdAt DATETIME
-		)`)
+		);
+		CREATE INDEX IF NOT EXISTS sessionIdIndexOnTodos ON todos (
+			sessionId ASC
+		);`)
 	statement.Exec() // 퀴리문을 실행
 
 	return &sqliteHandler{db} // 이 db를 계속 사용해야하니까 인스턴스로 저장하고 리턴해준다.
@@ -32,9 +36,11 @@ func (s *sqliteHandler) Close() { // db가 사라지기 전에 닫아줘야해�
 	s.db.Close()
 }
 
-func (s *sqliteHandler) GetTodos() []*Todo {
+func (s *sqliteHandler) GetTodos(sessionId string) []*Todo {
 	todos := []*Todo{}
-	rows, err := s.db.Query("SELECT id, name, completed, createdAt FROM todos")
+	// todos에서 검색하면 모든 항목을 비교해서 가져와야하므로 비효율적 O(N) -> 위에 CREATE 할 때 만들어진 인덱스를 사용해야함
+	// 지금은 디비가 작아서 그냥 todos에서 가져온다.
+	rows, err := s.db.Query("SELECT id, name, completed, createdAt FROM todos WHERE sessiondId=?", sessionId)
 	if err != nil {
 		panic(err)
 	}
@@ -47,12 +53,12 @@ func (s *sqliteHandler) GetTodos() []*Todo {
 	}
 	return todos
 }
-func (s *sqliteHandler) AddTodo(name string) *Todo {
-	stmt, err := s.db.Prepare("INSERT INTO todos (name, completed, createdAt) VALUES (?, ?, datetime('now'))") // 쿼리문 작성
+func (s *sqliteHandler) AddTodo(name string, sessionId string) *Todo {
+	stmt, err := s.db.Prepare("INSERT INTO todos (sessionId, name, completed, createdAt) VALUES (?, ?, ?, datetime('now'))") // 쿼리문 작성
 	if err != nil {
 		panic(err)
 	}
-	rst, err := stmt.Exec(name, false) // 쿼리문 실행(? 아규먼트 순서대로)
+	rst, err := stmt.Exec(sessionId, name, false) // 쿼리문 실행(? 아규먼트 순서대로)
 	if err != nil {
 		panic(err)
 	}

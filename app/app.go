@@ -40,14 +40,16 @@ type AppHandler struct {
 }
 
 func (a *AppHandler) getTodoListHandler(w http.ResponseWriter, r *http.Request) {
-	list := a.db.GetTodos()
+	sessionId := getSessionId(r) // 세션 아이디에 해당하는 리스트를 가져옴
+	list := a.db.GetTodos(sessionId)
 	// 렌더링을 사용해서 JSON으로 반환
 	rd.JSON(w, http.StatusOK, list)
 }
 
 func (a *AppHandler) addTodoHandler(w http.ResponseWriter, r *http.Request) { // 프론트에서 올 때 name에다 Item을 넣어서 온다.
-	name := r.FormValue("name") // 키를 통해서 value에 있는 Item을 꺼낸다.
-	todo := a.db.AddTodo(name)
+	sessionId := getSessionId(r) // 세션 아이디에 해당하는 리스트에 add
+	name := r.FormValue("name")  // 키를 통해서 value에 있는 Item을 꺼낸다.
+	todo := a.db.AddTodo(sessionId, name)
 	// 렌더링을 사용해서 JSON으로 반환
 	rd.JSON(w, http.StatusCreated, todo)
 }
