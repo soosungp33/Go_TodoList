@@ -54,7 +54,7 @@ func (s *pqHandler) GetTodos(sessionId string) []*Todo {
 	todos := []*Todo{}
 	// todos에서 검색하면 모든 항목을 비교해서 가져와야하므로 비효율적 O(N) -> 위에 CREATE 할 때 만들어진 인덱스를 사용해야함
 	// 지금은 디비가 작아서 그냥 todos에서 가져온다.
-	rows, err := s.db.Query("SELECT id, name, completed, createdAt FROM todos WHERE sessionId=?", sessionId)
+	rows, err := s.db.Query("SELECT id, name, completed, createdAt FROM todos WHERE sessionId=$1", sessionId)
 	if err != nil {
 		panic(err)
 	}
@@ -68,7 +68,7 @@ func (s *pqHandler) GetTodos(sessionId string) []*Todo {
 	return todos
 }
 func (s *pqHandler) AddTodo(name string, sessionId string) *Todo {
-	stmt, err := s.db.Prepare("INSERT INTO todos (sessionId, name, completed, createdAt) VALUES (?, ?, ?, datetime('now'))") // 쿼리문 작성
+	stmt, err := s.db.Prepare("INSERT INTO todos (sessionId, name, completed, createdAt) VALUES ($1, $2, $3, now())") // 쿼리문 작성
 	if err != nil {
 		panic(err)
 	}
@@ -86,7 +86,7 @@ func (s *pqHandler) AddTodo(name string, sessionId string) *Todo {
 	return &todo
 }
 func (s *pqHandler) RemoveTodo(id int) bool {
-	stmt, err := s.db.Prepare("DELETE FROM todos WHERE id=?") // 쿼리문 작성
+	stmt, err := s.db.Prepare("DELETE FROM todos WHERE id=$1") // 쿼리문 작성
 	if err != nil {
 		panic(err)
 	}
@@ -101,7 +101,7 @@ func (s *pqHandler) RemoveTodo(id int) bool {
 	return cnt > 0 // 변경된 내용이 1개면 true, 0개면 false
 }
 func (s *pqHandler) CompleteTodo(id int, complete bool) bool {
-	stmt, err := s.db.Prepare("UPDATE todos SET completed=? WHERE id=?") // 쿼리문 작성
+	stmt, err := s.db.Prepare("UPDATE todos SET completed=$1 WHERE id=$2") // 쿼리문 작성
 	if err != nil {
 		panic(err)
 	}
