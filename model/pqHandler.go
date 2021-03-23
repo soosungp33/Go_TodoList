@@ -19,10 +19,10 @@ func newPQHandler(dbConn string) DBHandler {
 	statement, err := db.Prepare( // 쿼리문 작성
 		`CREATE TABLE IF NOT EXISTS todos (
 			id 		  SERIAL PRIMARY KEY,
-			sessionId STRING,
+			sessionId VARCHAR(256),
 			name 	  TEXT,
 			completed BOOLEAN,
-			createdAt DATETIME
+			createdAt TIMESTAMP
 		);`)
 	if err != nil {
 		panic(err)
