@@ -23,8 +23,17 @@ func newPQHandler(dbConn string) DBHandler {
 			name 	  TEXT,
 			completed BOOLEAN,
 			createdAt DATETIME
-		);
-		CREATE INDEX IF NOT EXISTS sessionIdIndexOnTodos ON todos (
+		);`)
+	if err != nil {
+		panic(err)
+	}
+	_, err = statement.Exec() // 퀴리문을 실행
+	if err != nil {
+		panic(err)
+	}
+
+	statement, err = db.Prepare(
+		`CREATE INDEX IF NOT EXISTS sessionIdIndexOnTodos ON todos (
 			sessionId ASC
 		);`)
 	if err != nil {
